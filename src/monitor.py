@@ -1,0 +1,98 @@
+import argparse
+import sqlite3
+import time
+import random
+from dataclasses import dataclass, asdict
+
+from hardware import AVAILABLE_COMMAND_SETS
+
+@dataclass
+class EquipmentStatus:
+    timestamp: float
+    temperature: float
+    voltage: float
+    event: str | None = None
+
+class Equipment:
+    """Simulated COTS equipment."""
+
+    def __init__(self, hardware_type: str = "simulated") -> None:
+        # Load the list of commands for the chosen hardware type
+        self.commands = AVAILABLE_COMMAND_SETS.get(hardware_type, [])
+
+    def read_parameters(self) -> EquipmentStatus:
+        """Read parameters using the configured command set."""
+        # The commands would normally be sent to the equipment; here we just simulate
+        status = EquipmentStatus(
+            timestamp=time.time(),
+            temperature=20 + random.random() * 5,
+            voltage=3.3 + random.random() * 0.1,
+        )
+        # Random event with low probability
+        if random.random() < 0.1:
+            status.event = random.choice(["ALARM", "WARN", "INFO"])
+        return status
+
+def create_tables(conn: sqlite3.Connection) -> None:
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS measurements (
+            timestamp REAL PRIMARY KEY,
+            temperature REAL,
+            voltage REAL,
+            event TEXT
+        )
+        """
+    )
+    conn.commit()
+
+def store_status(conn: sqlite3.Connection, status: EquipmentStatus) -> None:
+    conn.execute(
+        "INSERT INTO measurements (timestamp, temperature, voltage, event) VALUES (?, ?, ?, ?)",
+        (status.timestamp, status.temperature, status.voltage, status.event),
+    )
+    conn.commit()
+
+def monitor(db_path: str, interval: int) -> None:
+    conn = sqlite3.connect(db_path)
+    create_tables(conn)
+    equipment = Equipment()
+    try:
+        while True:
+            status = equipment.read_parameters()
+            store_status(conn, status)
+            print(f"Stored status: {asdict(status)}")
+            time.sleep(interval)
+    except KeyboardInterrupt:
+        print("Monitoring stopped.")
+
+
+def replay(db_path: str) -> None:
+    conn = sqlite3.connect(db_path)
+    for row in conn.execute("SELECT timestamp, temperature, voltage, event FROM measurements ORDER BY timestamp"):
+        ts, temp, volt, event = row
+        t = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(ts))
+        print(f"{t}: T={temp:.2f}C V={volt:.2f}V Event={event or 'None'}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Monitor simulated COTS equipment")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    mon = sub.add_parser("run", help="Start monitoring")
+    mon.add_argument("--db", default="monitor.db", help="SQLite database path")
+    mon.add_argument("--interval", type=int, default=5, help="Housekeeping interval (1-10 seconds)")
+
+    rep = sub.add_parser("replay", help="Replay recorded measurements")
+    rep.add_argument("--db", default="monitor.db", help="SQLite database path")
+
+    args = parser.parse_args()
+
+    if args.command == "run":
+        interval = max(1, min(10, args.interval))
+        monitor(args.db, interval)
+    elif args.command == "replay":
+        replay(args.db)
+
+if __name__ == "__main__":
+    main()
