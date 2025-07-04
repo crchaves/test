@@ -24,3 +24,27 @@ python src/monitor.py replay --db monitor.db
 
 The script uses a default database file `monitor.db` in the current directory
 and restricts the polling interval to the range of 1–10 seconds.
+
+## Configurable Parameter Interface
+
+A helper script `src/ui.py` reads parameter groups from an ini file and
+prints them as a simple text interface. Each section in the ini file is treated
+as a parameter group. Example configuration:
+
+```ini
+[inputs]
+set_voltage = SET_VOLTAGE
+enable = ENABLE_OUTPUT
+
+[outputs]
+temperature = READ_TEMPERATURE
+voltage = READ_VOLTAGE
+```
+
+Run the interface with:
+
+```bash
+python src/ui.py config.ini
+```
+
+This will display the defined parameter groups and the associated values.
