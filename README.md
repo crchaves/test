@@ -7,8 +7,10 @@ The application periodically polls the device with a configurable housekeeping
 interval, records the parameters into a SQLite database and prints events. The
 recorded session can later be replayed.
 
-Command sets for each supported hardware type live in `src/hardware`. The
-`simulated` module lists the commands used by the built-in simulated device.
+Command sets for each supported hardware type now live in `.ini` files under
+`src/driver_configs`. Each file contains a comma separated list of commands in
+a `[commands]` section. These files are loaded automatically and used by the
+monitoring script.
 
 ## Usage
 
