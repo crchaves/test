@@ -4,4 +4,6 @@ COMMANDS = [
     "READ_TEMPERATURE",
     "READ_VOLTAGE",
     "CHECK_EVENTS",
+    "SET_OUTPUT",
+    "RESET",
 ]

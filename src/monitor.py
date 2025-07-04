@@ -1,8 +1,8 @@
 import argparse
+import random
 import sqlite3
 import time
-import random
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 
 from hardware import AVAILABLE_COMMAND_SETS
 
@@ -32,6 +32,13 @@ class Equipment:
         if random.random() < 0.1:
             status.event = random.choice(["ALARM", "WARN", "INFO"])
         return status
+
+    def send_command(self, command: str) -> str:
+        """Send a control command to the equipment."""
+        if command not in self.commands:
+            raise ValueError(f"Unsupported command: {command}")
+        # In a real system this would communicate with the hardware.
+        return f"Executed {command}"
 
 def create_tables(conn: sqlite3.Connection) -> None:
     conn.execute(
@@ -75,8 +82,17 @@ def replay(db_path: str) -> None:
         print(f"{t}: T={temp:.2f}C V={volt:.2f}V Event={event or 'None'}")
 
 
+def control(command: str) -> None:
+    equipment = Equipment()
+    try:
+        response = equipment.send_command(command)
+        print(response)
+    except ValueError as exc:
+        print(f"Error: {exc}")
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Monitor simulated COTS equipment")
+    parser = argparse.ArgumentParser(description="Monitor and control simulated COTS equipment")
     sub = parser.add_subparsers(dest="command", required=True)
 
     mon = sub.add_parser("run", help="Start monitoring")
@@ -86,6 +102,9 @@ def main() -> None:
     rep = sub.add_parser("replay", help="Replay recorded measurements")
     rep.add_argument("--db", default="monitor.db", help="SQLite database path")
 
+    ctrl = sub.add_parser("control", help="Send a control command")
+    ctrl.add_argument("--cmd", required=True, help="Command to send")
+
     args = parser.parse_args()
 
     if args.command == "run":
@@ -93,6 +112,8 @@ def main() -> None:
         monitor(args.db, interval)
     elif args.command == "replay":
         replay(args.db)
+    elif args.command == "control":
+        control(args.cmd)
 
 if __name__ == "__main__":
     main()
