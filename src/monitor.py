@@ -44,6 +44,23 @@ def create_tables(conn: sqlite3.Connection) -> None:
         )
         """
     )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS commands (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            command TEXT UNIQUE
+        )
+        """
+    )
+    conn.commit()
+
+def populate_commands(conn: sqlite3.Connection, commands: list[str]) -> None:
+    """Ensure each command exists in the commands table."""
+    for cmd in commands:
+        conn.execute(
+            "INSERT OR IGNORE INTO commands (command) VALUES (?)",
+            (cmd,),
+        )
     conn.commit()
 
 def store_status(conn: sqlite3.Connection, status: EquipmentStatus) -> None:
@@ -57,6 +74,7 @@ def monitor(db_path: str, interval: int) -> None:
     conn = sqlite3.connect(db_path)
     create_tables(conn)
     equipment = Equipment()
+    populate_commands(conn, equipment.commands)
     try:
         while True:
             status = equipment.read_parameters()

@@ -7,6 +7,10 @@ The application periodically polls the device with a configurable housekeeping
 interval, records the parameters into a SQLite database and prints events. The
 recorded session can later be replayed.
 
+Each command used to talk to the equipment is stored once in the database with
+a unique identifier. These entries live in the `commands` table and allow a
+single ID to be referenced for a request.
+
 Command sets for each supported hardware type live in `src/hardware`. The
 `simulated` module lists the commands used by the built-in simulated device.
 
