@@ -117,6 +117,10 @@ served with `serve_https.py`, it will load sample AIS data from
 `ais_sample.json` and plot vessel positions. Edit the JSON file or replace it
 with real AIS traffic to visualize different data.
 
+For a simple 3D view of the earth you can open `globe.html`. This page uses the
+`three-globe` library to render a rotating globe and marks each vessel position
+from `ais_sample.json` on top of it.
+
 
 ### AIS Traffic Replay
 
