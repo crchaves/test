@@ -115,3 +115,27 @@ The `index.html` page now displays a small map using the Leaflet library. When
 served with `serve_https.py`, it will load sample AIS data from
 `ais_sample.json` and plot vessel positions. Edit the JSON file or replace it
 with real AIS traffic to visualize different data.
+
+### AIS Driver
+
+An `AISDriver` class is provided to read AIS messages over a TCP stream. Messages
+are expected as newline separated JSON objects. Configure the feed address in
+`ais_config.json`:
+
+```json
+{
+  "ip": "127.0.0.1",
+  "port": 10110
+}
+```
+
+Example usage:
+
+```python
+from src.ais_driver import AISDriver
+
+with AISDriver("127.0.0.1", 10110) as drv:
+    message = drv.read_message()
+    print(message)
+```
+
