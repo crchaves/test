@@ -34,6 +34,31 @@ self‑signed certificate (if you don't have one already):
 The script uses a default database file `monitor.db` in the current directory
 and restricts the polling interval to the range of 1–10 seconds.
 
+
+## Configurable Parameter Interface
+
+A helper script `src/ui.py` reads parameter groups from an ini file and
+prints them as a simple text interface. Each section in the ini file is treated
+as a parameter group. Example configuration:
+
+```ini
+[inputs]
+set_voltage = SET_VOLTAGE
+enable = ENABLE_OUTPUT
+
+[outputs]
+temperature = READ_TEMPERATURE
+voltage = READ_VOLTAGE
+```
+
+Run the interface with:
+
+```bash
+python src/ui.py config.ini
+```
+
+This will display the defined parameter groups and the associated values.
+
 ### Simulator vs Real Device
 
 Runtime options are read from `config.json`. Edit this file to switch between
@@ -49,4 +74,3 @@ the built-in simulator and a real device:
 
 Set `hardware_type` to `real` and provide the `ip` and `port` of your device to
 connect to actual hardware. Leaving the default values runs the simulator.
-
