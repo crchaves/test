@@ -12,6 +12,20 @@ Command sets for each supported hardware type now live in `.ini` files under
 a `[commands]` section. These files are loaded automatically and used by the
 monitoring script.
 
+## Checkout and Setup
+
+Clone the repository and create a virtual environment (optional):
+
+```bash
+git clone <repository-url>
+cd <repository-directory>
+python -m venv .venv
+source .venv/bin/activate
+```
+
+The application only relies on the Python standard library so no additional
+packages are required.
+
 ## Usage
 
 
@@ -21,16 +35,26 @@ To view the HTML interface or any generated data in a browser, you can run a
 simple HTTPS server using the provided `serve_https.py` script. First generate a
 self‑signed certificate (if you don't have one already):
 
-```bash
-openssl req -new -x509 -nodes -out cert.pem -keyout key.pem -days 365
+
+The script uses a default database file `monitor.db` in the current directory
+and restricts the polling interval to the range of 1–10 seconds.
+
+### Simulator vs Real Device
+
+Runtime options are read from `config.json`. Edit this file to switch between
+the built-in simulator and a real device:
+
+```json
+{
+  "hardware_type": "simulated",
+  "ip": "127.0.0.1",
+  "port": 10000
+}
 ```
 
-Then start the server:
-
-```bash
-python serve_https.py --cert cert.pem --key key.pem --directory . --port 8443
-```
-
+Set `hardware_type` to `real` and provide the `ip` and `port` of your device to
+connect to actual hardware. Leaving the default values runs the simulator.
+=======
 Open `https://localhost:8443/` in Chrome or Firefox. You may need to accept the
 self‑signed certificate warning.
-=======
+
