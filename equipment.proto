@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+message EquipmentStatus {
+  double timestamp = 1;
+  double temperature = 2;
+  double voltage = 3;
+  string event = 4;
+}

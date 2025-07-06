@@ -154,3 +154,23 @@ with AISDriver("127.0.0.1", 10110) as drv:
     print(message)
 ```
 
+
+## Protocol Buffer Encoding
+
+A minimal Protocol Buffer schema is provided in `equipment.proto`. It defines an
+`EquipmentStatus` message matching the dataclass used by the monitor. The
+`src/equipment_pb.py` module implements lightweight functions to serialise and
+deserialise this message without external dependencies.
+
+```python
+from src.monitor import EquipmentStatus
+from src.equipment_pb import serialize_status, parse_status
+
+status = EquipmentStatus(timestamp=1.0, temperature=25.0, voltage=3.3, event="OK")
+encoded = serialize_status(status)
+recovered = parse_status(encoded)
+print(recovered)
+```
+
+This binary format makes it easy to pass status updates to other applications
+that understand the same `equipment.proto` schema.
