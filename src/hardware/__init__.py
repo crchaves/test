@@ -10,27 +10,34 @@ from __future__ import annotations
 
 import configparser
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 
-def _load_command_set(path: Path) -> list[str]:
+def _load_config(path: Path) -> Tuple[list[str], Dict[str, str]]:
     parser = configparser.ConfigParser()
     parser.read(path)
     commands: list[str] = []
+    params: Dict[str, str] = {}
     if parser.has_section("commands"):
         raw = parser.get("commands", "list", fallback="")
         if raw:
             commands = [c.strip() for c in raw.split(",") if c.strip()]
-    return commands
+    if parser.has_section("parameters"):
+        for name, oid in parser.items("parameters"):
+            params[name] = oid.strip()
+    return commands, params
 
 
-def _discover_command_sets() -> Dict[str, List[str]]:
+def _discover_configs() -> Tuple[Dict[str, List[str]], Dict[str, Dict[str, str]]]:
     base = Path(__file__).resolve().parent.parent / "driver_configs"
     command_sets: Dict[str, List[str]] = {}
+    parameter_sets: Dict[str, Dict[str, str]] = {}
     if base.exists():
         for ini in base.glob("*.ini"):
-            command_sets[ini.stem] = _load_command_set(ini)
-    return command_sets
+            cmds, params = _load_config(ini)
+            command_sets[ini.stem] = cmds
+            parameter_sets[ini.stem] = params
+    return command_sets, parameter_sets
 
 
-AVAILABLE_COMMAND_SETS: Dict[str, List[str]] = _discover_command_sets()
+AVAILABLE_COMMAND_SETS, AVAILABLE_SNMP_PARAMS = _discover_configs()

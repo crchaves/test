@@ -90,3 +90,21 @@ the built-in simulator and a real device:
 
 Set `hardware_type` to `real` and provide the `ip` and `port` of your device to
 connect to actual hardware. Leaving the default values runs the simulator.
+
+### SNMP Devices
+
+Devices that expose an SNMP interface can also be monitored. For each hardware
+type with an accompanying MIB, add an ini file under `src/driver_configs` with a
+`[parameters]` section mapping parameter names to OIDs. Example:
+
+```ini
+[parameters]
+temperature = 1.3.6.1.4.1.9999.1.1
+voltage = 1.3.6.1.4.1.9999.1.2
+```
+
+Use the `snmp` command to start monitoring:
+
+```bash
+python src/monitor.py snmp --config config.json --db snmp.db
+```

@@ -1,19 +1,14 @@
 import argparse
-
-import random
-import sqlite3
-import time
-from dataclasses import asdict, dataclass
-
 import json
 import os
 import random
 import sqlite3
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 
 
-from hardware import AVAILABLE_COMMAND_SETS
+from hardware import AVAILABLE_COMMAND_SETS, AVAILABLE_SNMP_PARAMS
+from snmp import SNMPDevice
 
 @dataclass
 class Config:
@@ -22,6 +17,7 @@ class Config:
     hardware_type: str = "simulated"
     ip: str | None = None
     port: int | None = None
+    community: str = "public"
 
 
 def load_config(path: str) -> Config:
@@ -33,6 +29,7 @@ def load_config(path: str) -> Config:
             hardware_type=data.get("hardware_type", "simulated"),
             ip=data.get("ip"),
             port=data.get("port"),
+            community=data.get("community", "public"),
         )
     return Config()
 
@@ -47,16 +44,33 @@ class Equipment:
     """COTS equipment interface."""
 
     def __init__(
-        self, hardware_type: str = "simulated", ip: str | None = None, port: int | None = None
+        self,
+        hardware_type: str = "simulated",
+        ip: str | None = None,
+        port: int | None = None,
+        community: str = "public",
     ) -> None:
         # Load the list of commands for the chosen hardware type
         self.commands = AVAILABLE_COMMAND_SETS.get(hardware_type, [])
+        self.params = AVAILABLE_SNMP_PARAMS.get(hardware_type, {})
         self.ip = ip
         self.port = port
+        self.community = community
         self.hardware_type = hardware_type
 
     def read_parameters(self) -> EquipmentStatus:
         """Read parameters using the configured command set."""
+        if self.params and self.ip:
+            device = SNMPDevice(self.ip, self.params, community=self.community, port=self.port or 161)
+            values = device.read_all()
+            status = EquipmentStatus(
+                timestamp=time.time(),
+                temperature=float(values.get("temperature", 0.0) or 0.0),
+                voltage=float(values.get("voltage", 0.0) or 0.0),
+            )
+            status.event = values.get("event")
+            return status
+
         # The commands would normally be sent to the equipment (possibly using
         # ``self.ip`` and ``self.port``); here we just simulate
         status = EquipmentStatus(
@@ -73,6 +87,10 @@ class Equipment:
         """Send a control command to the equipment."""
         if command not in self.commands:
             raise ValueError(f"Unsupported command: {command}")
+        if self.params and self.ip:
+            device = SNMPDevice(self.ip, self.params, community=self.community, port=self.port or 161)
+            success = device.set_value(command, "1")
+            return "OK" if success else "ERROR"
         # In a real system this would communicate with the hardware.
         return f"Executed {command}"
 
@@ -97,12 +115,35 @@ def create_tables(conn: sqlite3.Connection) -> None:
     )
     conn.commit()
 
+
+def create_snmp_tables(conn: sqlite3.Connection) -> None:
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS snmp_measurements (
+            timestamp REAL,
+            parameter TEXT,
+            value TEXT
+        )
+        """
+    )
+    conn.commit()
+
 def populate_commands(conn: sqlite3.Connection, commands: list[str]) -> None:
     """Ensure each command exists in the commands table."""
     for cmd in commands:
         conn.execute(
             "INSERT OR IGNORE INTO commands (command) VALUES (?)",
             (cmd,),
+        )
+    conn.commit()
+
+
+def store_snmp_status(conn: sqlite3.Connection, data: dict[str, str]) -> None:
+    ts = time.time()
+    for name, value in data.items():
+        conn.execute(
+            "INSERT INTO snmp_measurements (timestamp, parameter, value) VALUES (?, ?, ?)",
+            (ts, name, value),
         )
     conn.commit()
 
@@ -128,6 +169,24 @@ def monitor(db_path: str, interval: int, config_path: str) -> None:
             status = equipment.read_parameters()
             store_status(conn, status)
             print(f"Stored status: {asdict(status)}")
+            time.sleep(interval)
+    except KeyboardInterrupt:
+        print("Monitoring stopped.")
+
+
+def monitor_snmp(db_path: str, interval: int, config_path: str) -> None:
+    config = load_config(config_path)
+    params = AVAILABLE_SNMP_PARAMS.get(config.hardware_type, {})
+    if not params:
+        raise ValueError("No SNMP parameters defined for this hardware type")
+    device = SNMPDevice(config.ip or "127.0.0.1", params, community=config.community, port=config.port or 161)
+    conn = sqlite3.connect(db_path)
+    create_snmp_tables(conn)
+    try:
+        while True:
+            data = device.read_all()
+            store_snmp_status(conn, data)
+            print(f"Stored SNMP data: {data}")
             time.sleep(interval)
     except KeyboardInterrupt:
         print("Monitoring stopped.")
@@ -165,6 +224,11 @@ def main() -> None:
     ctrl = sub.add_parser("control", help="Send a control command")
     ctrl.add_argument("--cmd", required=True, help="Command to send")
 
+    snmp = sub.add_parser("snmp", help="Monitor SNMP device")
+    snmp.add_argument("--db", default="snmp.db", help="SQLite database path")
+    snmp.add_argument("--interval", type=int, default=5, help="Polling interval")
+    snmp.add_argument("--config", default="config.json", help="Path to configuration file")
+
     args = parser.parse_args()
 
     if args.command == "run":
@@ -174,6 +238,9 @@ def main() -> None:
         replay(args.db)
     elif args.command == "control":
         control(args.cmd)
+    elif args.command == "snmp":
+        interval = max(1, min(10, args.interval))
+        monitor_snmp(args.db, interval, args.config)
 
 if __name__ == "__main__":
     main()
