@@ -154,3 +154,17 @@ with AISDriver("127.0.0.1", 10110) as drv:
     print(message)
 ```
 
+
+### NMEA Driver
+
+`NMEADriver` connects to a TCP source that streams NMEA 0183 navigation
+sentences such as ``GGA``, ``GLL`` and ``GSA``. Provide the IP address and port
+of the feed:
+
+```python
+from src.nmea_driver import NMEADriver
+
+with NMEADriver("192.168.1.10", 5000) as drv:
+    sentence = drv.read_sentence({"GGA", "GLL", "GSA"})
+    print(sentence)
+```
