@@ -110,6 +110,14 @@ python src/monitor.py snmp --config config.json --db snmp.db
 ```
 
 
+## AIS Map
+
+The `index.html` page now displays a small map using the Leaflet library. When
+served with `serve_https.py`, it will load sample AIS data from
+`ais_sample.json` and plot vessel positions. Edit the JSON file or replace it
+with real AIS traffic to visualize different data.
+
+
 ### AIS Traffic Replay
 
 Recorded AIS NMEA sentences can be replayed using the simulator. Each
@@ -121,6 +129,7 @@ python -m simulator.simulate ais path/to/traffic.log --delay 0.5
 ```
 
 The optional `--delay` parameter sets a fixed delay between messages.
+
 
 ### AIS Driver
 
