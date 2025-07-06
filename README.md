@@ -8,6 +8,14 @@ interval, records the parameters into a SQLite database and prints events. The
 recorded session can later be replayed. It also supports sending simple control
 commands to the equipment.
 
+
+Each command used to talk to the equipment is stored once in the database with
+a unique identifier. These entries live in the `commands` table and allow a
+single ID to be referenced for a request.
+
+Command sets for each supported hardware type live in `src/hardware`. The
+`simulated` module lists the commands used by the built-in simulated device.
+
 Command sets for each supported hardware type now live in `.ini` files under
 `src/driver_configs`. Each file contains a comma separated list of commands in
 a `[commands]` section. These files are loaded automatically and used by the
@@ -21,6 +29,7 @@ Clone the repository and create a virtual environment (optional):
 
 The application only relies on the Python standard library so no additional
 packages are required.
+
 
 ## Usage
 
