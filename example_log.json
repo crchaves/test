@@ -1,0 +1,11 @@
+{
+  "parameters": {
+    "user": "tester",
+    "session_id": "1234"
+  },
+  "events": [
+    {"timestamp": 0, "type": "start", "data": "Session started"},
+    {"timestamp": 1, "type": "message", "data": "Hello"},
+    {"timestamp": 2, "type": "end", "data": "Session ended"}
+  ]
+}
