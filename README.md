@@ -24,3 +24,4 @@ python src/monitor.py replay --db monitor.db
 
 The script uses a default database file `monitor.db` in the current directory
 and restricts the polling interval to the range of 1–10 seconds.
+
