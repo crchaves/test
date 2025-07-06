@@ -1,11 +1,12 @@
-# COTS Monitoring Application
+# COTS Monitoring and Control Application
 
-This repository contains a small example Python application used to monitor a
-(simulated) Commercial Off-The-Shelf (COTS) equipment device.
+This repository contains a small example Python application used to monitor and
+control a (simulated) Commercial Off-The-Shelf (COTS) equipment device.
 
 The application periodically polls the device with a configurable housekeeping
 interval, records the parameters into a SQLite database and prints events. The
-recorded session can later be replayed.
+recorded session can later be replayed. It also supports sending simple control
+commands to the equipment.
 
 Command sets for each supported hardware type now live in `.ini` files under
 `src/driver_configs`. Each file contains a comma separated list of commands in
@@ -30,6 +31,12 @@ To view the HTML interface or any generated data in a browser, you can run a
 simple HTTPS server using the provided `serve_https.py` script. First generate a
 self‑signed certificate (if you don't have one already):
 
+
+To send a control command to the device:
+
+```bash
+python src/monitor.py control --cmd RESET
+```
 
 The script uses a default database file `monitor.db` in the current directory
 and restricts the polling interval to the range of 1–10 seconds.
