@@ -109,6 +109,19 @@ Use the `snmp` command to start monitoring:
 python src/monitor.py snmp --config config.json --db snmp.db
 ```
 
+
+### AIS Traffic Replay
+
+Recorded AIS NMEA sentences can be replayed using the simulator. Each
+non‑empty line from a log file is printed back to the console. Use the
+`ais` command of `simulator/simulate.py`:
+
+```bash
+python -m simulator.simulate ais path/to/traffic.log --delay 0.5
+```
+
+The optional `--delay` parameter sets a fixed delay between messages.
+
 ### AIS Driver
 
 An `AISDriver` class is provided to read AIS messages over a TCP stream. Messages
@@ -131,3 +144,4 @@ with AISDriver("127.0.0.1", 10110) as drv:
     message = drv.read_message()
     print(message)
 ```
+

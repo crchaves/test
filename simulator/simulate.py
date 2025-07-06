@@ -12,6 +12,7 @@ if str(SRC_PATH) not in sys.path:
     sys.path.insert(0, str(SRC_PATH))
 
 from monitor import monitor, replay
+from ais import replay_ais
 
 
 def main() -> None:
@@ -30,6 +31,10 @@ def main() -> None:
     rep = sub.add_parser("replay", help="Replay recorded measurements from simulator")
     rep.add_argument("--db", default="monitor.db", help="SQLite database path")
 
+    ais = sub.add_parser("ais", help="Replay AIS traffic file")
+    ais.add_argument("log", help="Path to AIS log file")
+    ais.add_argument("--delay", type=float, default=0.0, help="Delay between sentences")
+
     args = parser.parse_args()
 
     if args.command == "run":
@@ -37,6 +42,8 @@ def main() -> None:
         monitor(args.db, interval)
     elif args.command == "replay":
         replay(args.db)
+    elif args.command == "ais":
+        replay_ais(args.log, delay=args.delay)
 
 
 if __name__ == "__main__":
