@@ -7,23 +7,13 @@ The application periodically polls the device with a configurable housekeeping
 interval, records the parameters into a SQLite database and prints events. The
 recorded session can later be replayed.
 
-Command sets for each supported hardware type live in `src/hardware`. The
-`simulated` module lists the commands used by the built-in simulated device.
+Command sets for each supported hardware type now live in `.ini` files under
+`src/driver_configs`. Each file contains a comma separated list of commands in
+a `[commands]` section. These files are loaded automatically and used by the
+monitoring script.
 
 ## Usage
 
-```bash
-python src/monitor.py run --db monitor.db --interval 5
-```
-
-Stop the monitoring with `Ctrl+C`. To replay all recorded measurements:
-
-```bash
-python src/monitor.py replay --db monitor.db
-```
-
-The script uses a default database file `monitor.db` in the current directory
-and restricts the polling interval to the range of 1–10 seconds.
 
 ## Serving the Application over HTTPS
 
@@ -43,3 +33,4 @@ python serve_https.py --cert cert.pem --key key.pem --directory . --port 8443
 
 Open `https://localhost:8443/` in Chrome or Firefox. You may need to accept the
 self‑signed certificate warning.
+=======
