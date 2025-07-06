@@ -16,12 +16,7 @@ monitoring script.
 
 Clone the repository and create a virtual environment (optional):
 
-```bash
-git clone <repository-url>
-cd <repository-directory>
-python -m venv .venv
-source .venv/bin/activate
-```
+
 
 The application only relies on the Python standard library so no additional
 packages are required.
@@ -54,7 +49,4 @@ the built-in simulator and a real device:
 
 Set `hardware_type` to `real` and provide the `ip` and `port` of your device to
 connect to actual hardware. Leaving the default values runs the simulator.
-=======
-Open `https://localhost:8443/` in Chrome or Firefox. You may need to accept the
-self‑signed certificate warning.
 
