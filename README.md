@@ -1,20 +1,27 @@
-# Test Repository
+# COTS Monitoring Application
 
-This repository contains a static web page and a simple subsystem for recording
-and replaying sessions.
+This repository contains a small example Python application used to monitor a
+(simulated) Commercial Off-The-Shelf (COTS) equipment device.
 
-## Replay Subsystem
+The application periodically polls the device with a configurable housekeeping
+interval, records the parameters into a SQLite database and prints events. The
+recorded session can later be replayed.
 
-The `replay.py` script can replay events from a JSON log file. A sample log
-(`example_log.json`) is provided.
+Command sets for each supported hardware type live in `src/hardware`. The
+`simulated` module lists the commands used by the built-in simulated device.
 
-### Usage
+## Usage
 
+```bash
+python src/monitor.py run --db monitor.db --interval 5
 ```
-python replay.py example_log.json --delay 1
+
+Stop the monitoring with `Ctrl+C`. To replay all recorded measurements:
+
+```bash
+python src/monitor.py replay --db monitor.db
 ```
 
-This will print each recorded event, waiting one second between events.
+The script uses a default database file `monitor.db` in the current directory
+and restricts the polling interval to the range of 1–10 seconds.
 
-You can also use `SessionRecorder` from the script to record new sessions and
-export them as JSON logs.
