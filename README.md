@@ -108,3 +108,10 @@ Use the `snmp` command to start monitoring:
 ```bash
 python src/monitor.py snmp --config config.json --db snmp.db
 ```
+
+## AIS Map
+
+The `index.html` page now displays a small map using the Leaflet library. When
+served with `serve_https.py`, it will load sample AIS data from
+`ais_sample.json` and plot vessel positions. Edit the JSON file or replace it
+with real AIS traffic to visualize different data.
